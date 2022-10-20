@@ -48,6 +48,17 @@ transforms = A.Compose(
 file = st.file_uploader("", type=["png", "jpg"])
 
 
+with open("./assets/0.png", "rb") as file1:
+    btn = st.download_button(
+        label="Download Sample-1 Image", data=file1, file_name="0.png", mime="image/png"
+    )
+
+with open("./assets/1.png", "rb") as file2:
+    btn = st.download_button(
+        label="Download Sample-2 Image", data=file2, file_name="1.png", mime="image/png"
+    )
+
+
 @st.cache(allow_output_mutation=True)
 def generate_cam():
     target_layer = [model.layer4[-1]]
@@ -69,7 +80,6 @@ def deprocess_image(img):
 
 
 def dretino(img):
-    print(img.shape)
     img = transforms(image=img)["image"]
     img = torch.tensor(img)
 
