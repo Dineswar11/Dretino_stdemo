@@ -1,0 +1,7 @@
+torch
+Pillow
+albumentations
+numpy
+torchvision
+pytorch-gradcam
+streamlit
