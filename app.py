@@ -12,31 +12,26 @@ from pytorch_grad_cam.utils.image import show_cam_on_image
 
 import streamlit as st
 
-# components.iframe("https://docs.streamlit.io/en/latest")
-
-# html_ = open("static\\main.html",'r',encoding='utf-8')
-# source_code = html_.read()
-
-# components.html(source_code,height=4200,width=1000,scrolling=True)
-
-st.set_option('deprecation.showfileUploaderEncoding', False)
+st.set_option("deprecation.showfileUploaderEncoding", False)
 
 
 @st.cache(allow_output_mutation=True)
 def load_model():
-    return torch.load('dretino.pt')
+    return torch.load("dretino.pt")
 
 
 model = load_model()
 
 
-st.write("""
+st.write(
+    """
 
     # Web Demo for Self-Supervised Learning on Diabetic Retinopathy Images
 
     ### [GitHub](https://github.com/Dineswar11/dretino)
 
-    """)
+    """
+)
 
 transforms = A.Compose(
     [
@@ -50,16 +45,14 @@ transforms = A.Compose(
     ]
 )
 
-file = st.file_uploader('', type=['png', 'jpg'])
+file = st.file_uploader("", type=["png", "jpg"])
 
 
 @st.cache(allow_output_mutation=True)
 def generate_cam():
     target_layer = [model.layer4[-1]]
 
-    cam = GradCAM(model=model,
-                  target_layers=target_layer,
-                  use_cuda=False)
+    cam = GradCAM(model=model, target_layers=target_layer, use_cuda=False)
     return cam
 
 
@@ -77,7 +70,7 @@ def deprocess_image(img):
 
 def dretino(img):
     print(img.shape)
-    img = transforms(image=img)['image']
+    img = transforms(image=img)["image"]
     img = torch.tensor(img)
 
     img = torch.unsqueeze(img, 0)
@@ -91,31 +84,34 @@ def dretino(img):
     logits = model(img)
 
     preds = torch.nn.Softmax(dim=1)(logits.data)[0]
-    res = {'No': 0, 'Mild': 0, 'Moderate': 0, 'Severe': 0, 'Proliferative': 0}
+    res = {"No": 0, "Mild": 0, "Moderate": 0, "Severe": 0, "Proliferative": 0}
     for idx, key in enumerate(res.keys()):
         res[key] = preds[idx]
 
     return res, viz
 
+
 if file is None:
     st.text("Please upload an image file")
 else:
-    st.text('Uploaded Image')
+    st.text("Uploaded Image")
     image = np.asarray(Image.open(file))
     if image.shape[-1] == 4:
-        image = image.convert('RGB')
+        image = image.convert("RGB")
     st.image(image, use_column_width=True)
-    res,viz = dretino(image)
-    fig,ax = plt.subplots()
-    ax.barh(list(res.keys()),np.array(list(res.values())))
+    res, viz = dretino(image)
+    fig, ax = plt.subplots()
+    ax.barh(list(res.keys()), np.array(list(res.values())))
     ax.grid(visible=True)
-    st.text('Predicted Result')
-    res_ = {key:float("{:.2f}".format(item.item())) for key,item in res.items()}
+    st.text("Predicted Result")
+    res_ = {key: float("{:.2f}".format(item.item())) for key, item in res.items()}
     st.write(res_)
     st.write(fig)
-    st.text('GradCam Output')
-    st.write("""
+    st.text("GradCam Output")
+    st.write(
+        """
     For more information about GradCam visit 
     [GradCam-Book](https://jacobgil.github.io/pytorch-gradcam-book/introduction.html)
-    """)
+    """
+    )
     st.image(viz, use_column_width=True)
